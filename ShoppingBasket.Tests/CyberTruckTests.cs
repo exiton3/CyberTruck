@@ -96,10 +96,15 @@ namespace ShoppingBasket.Tests
             Assert.That(Direction.North, Is.EqualTo(_truck.Direction));
         }
 
+
         [Test]
-        public void MovePassedRCommand_TurnTruckClockwiseFromNorthToEast()
+        [TestCase(Direction.North,Direction.East)]
+        [TestCase(Direction.East,Direction.South)]
+        [TestCase(Direction.South,Direction.West)]
+        [TestCase(Direction.West,Direction.North)]
+        public void MovePassedRCommand_TurnTruckClockwise(Direction from, Direction to)
         {
-            _truck.Drop(6, 8);
+            _truck.Drop(6, 8,from);
 
             var RightCommand = "R";
 
@@ -108,52 +113,7 @@ namespace ShoppingBasket.Tests
             Assert.That(6, Is.EqualTo(_truck.X));
             Assert.That(8, Is.EqualTo(_truck.Y));
 
-            Assert.That(Direction.East, Is.EqualTo(_truck.Direction));
-        }
-
-        [Test]
-        public void MovePassedRCommand_TurnTruckClockwiseFromEastToSouth()
-        {
-            _truck.Drop(6, 8,Direction.East);
-
-            var RightCommand = "R";
-
-            _truck.Move(RightCommand);
-
-            Assert.That(6, Is.EqualTo(_truck.X));
-            Assert.That(8, Is.EqualTo(_truck.Y));
-
-            Assert.That(Direction.South, Is.EqualTo(_truck.Direction));
-        }
-
-        [Test]
-        public void MovePassedRCommand_TurnTruckClockwiseFromSouthToWest()
-        {
-            _truck.Drop(6, 8, Direction.South);
-
-            var RightCommand = "R";
-
-            _truck.Move(RightCommand);
-
-            Assert.That(6, Is.EqualTo(_truck.X));
-            Assert.That(8, Is.EqualTo(_truck.Y));
-
-            Assert.That(Direction.West, Is.EqualTo(_truck.Direction));
-        }
-
-        [Test]
-        public void MovePassedRCommand_TurnTruckClockwiseFromWestToNorth()
-        {
-            _truck.Drop(6, 8, Direction.West);
-
-            var RightCommand = "R";
-
-            _truck.Move(RightCommand);
-
-            Assert.That(6, Is.EqualTo(_truck.X));
-            Assert.That(8, Is.EqualTo(_truck.Y));
-
-            Assert.That(Direction.North, Is.EqualTo(_truck.Direction));
+            Assert.That(to, Is.EqualTo(_truck.Direction));
         }
     }
 }

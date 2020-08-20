@@ -7,13 +7,9 @@
         private const string RightCommand = "R";
         public int X { get; set; }
         public int Y { get; set; }
-        public Direction Direction
-        {
-            get { return predefinedDirections[_currentDirectionIndex]; }
-        }
+        public Direction Direction => _predefinedDirections[_currentDirectionIndex];
 
-        private Direction[] predefinedDirections = new[]
-            {Direction.North, Direction.East, Direction.South, Direction.West};
+        private readonly Direction[] _predefinedDirections = {Direction.North, Direction.East, Direction.South, Direction.West};
 
         private int _currentDirectionIndex;
         public void Drop(int x, int y, Direction direction = Direction.North)
@@ -27,14 +23,7 @@
         {
             if (command == RightCommand)
             {
-                if (_currentDirectionIndex >= 3)
-                {
-                    _currentDirectionIndex = 0;
-                }
-                else
-                {
-                    _currentDirectionIndex++;
-                }
+                _currentDirectionIndex = _currentDirectionIndex >= 3 ? 0 : ++_currentDirectionIndex;
             }
             if (command == ForwardCommand)
             {
