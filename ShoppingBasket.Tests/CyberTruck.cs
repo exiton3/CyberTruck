@@ -4,6 +4,7 @@
     {
         private const string ForwardCommand = "F";
         private const string BackwardCommand = "B";
+        private const string RightCommand = "R";
         public int X { get; set; }
         public int Y { get; set; }
         public Direction Direction
@@ -24,9 +25,16 @@
 
         public void Move(string command)
         {
-            if (command == "R")
+            if (command == RightCommand)
             {
-                _currentDirectionIndex++;
+                if (_currentDirectionIndex >= 3)
+                {
+                    _currentDirectionIndex = 0;
+                }
+                else
+                {
+                    _currentDirectionIndex++;
+                }
             }
             if (command == ForwardCommand)
             {

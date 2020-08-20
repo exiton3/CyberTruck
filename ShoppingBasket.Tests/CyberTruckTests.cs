@@ -140,5 +140,20 @@ namespace ShoppingBasket.Tests
 
             Assert.That(Direction.West, Is.EqualTo(_truck.Direction));
         }
+
+        [Test]
+        public void MovePassedRCommand_TurnTruckClockwiseFromWestToNorth()
+        {
+            _truck.Drop(6, 8, Direction.West);
+
+            var RightCommand = "R";
+
+            _truck.Move(RightCommand);
+
+            Assert.That(6, Is.EqualTo(_truck.X));
+            Assert.That(8, Is.EqualTo(_truck.Y));
+
+            Assert.That(Direction.North, Is.EqualTo(_truck.Direction));
+        }
     }
 }
