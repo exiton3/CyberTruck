@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 
 namespace ShoppingBasket.Tests
 {
@@ -114,6 +115,29 @@ namespace ShoppingBasket.Tests
             Assert.That(8, Is.EqualTo(_truck.Y));
 
             Assert.That(to, Is.EqualTo(_truck.Direction));
+        }
+
+        [Test]
+        [TestCase(Direction.East, Direction.North)]
+       
+        public void MovePassedLCommand_TurnTruckOppositeClockwise(Direction from, Direction to)
+        {
+            _truck.Drop(6, 8, from);
+
+            var LeftCommand = "L";
+
+            _truck.Move(LeftCommand);
+
+            Assert.That(6, Is.EqualTo(_truck.X));
+            Assert.That(8, Is.EqualTo(_truck.Y));
+
+            Assert.That(to, Is.EqualTo(_truck.Direction));
+        }
+
+        [Test]
+        public void TestName()
+        {
+            Console.WriteLine($"{1%4}");
         }
     }
 }
