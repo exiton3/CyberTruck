@@ -23,7 +23,6 @@ namespace ShoppingBasket.Tests.Exercise3
         public void SetUp()
         {
             _order = new Mock<IOrder>();
-
             _payment = new Mock<IPayment>();
             _warehouse = new Mock<IWarehouse>();
             _charts = new Mock<ICharts>();
@@ -38,7 +37,7 @@ namespace ShoppingBasket.Tests.Exercise3
 
             _warehouse.Setup(x => x.IsInStock(cdRequest)).Returns(false);
 
-            var result = _musicStore.Buy(cdRequest);
+            _musicStore.Buy(cdRequest);
 
             _payment.Verify(x => x.AcceptPayment(), Times.Never);
         }
@@ -96,10 +95,9 @@ namespace ShoppingBasket.Tests.Exercise3
         public void PaymentIsRejected_RestockCDInWarehouse()
         {
             _payment.Setup(x => x.AcceptPayment()).Returns(false);
-            var quantity = 1;
+            var cdRequest = new BuyCDRequest(1);
 
-            var cdRequest = new BuyCDRequest(quantity);
-            var result = _musicStore.Buy(cdRequest);
+            _musicStore.Buy(cdRequest);
 
             _warehouse.Verify(x => x.RestockCd(cdRequest));
         }
