@@ -1,17 +1,5 @@
 ﻿namespace ShoppingBasket.Tests.Exercise3
 {
-    public class BuyCDRequest
-    {
-        public BuyCDRequest(int quantity)
-        {
-            Quantity = quantity;
-        }
-
-        public int Quantity { get; private set; }
-        public string Artist { get; set; }
-        public string Title { get; set; }
-    }
-
     public class MusicStore
     {
         private readonly IOrder _order;
@@ -26,9 +14,6 @@
             _warehouse = warehouse;
             _charts = charts;
         }
-
-        public string Title { get; set; }
-        public string Artist { get; set; }
 
         public OrderResult Buy(BuyCDRequest request)
         {
