@@ -1,13 +1,25 @@
 ﻿namespace ShoppingBasket.Tests.Exercise3
 {
-    public class CD
+    public class BuyCDRequest
+    {
+        public BuyCDRequest(int quantity)
+        {
+            Quantity = quantity;
+        }
+
+        public int Quantity { get; private set; }
+        public string Artist { get; set; }
+        public string Title { get; set; }
+    }
+
+    public class MusicStore
     {
         private readonly IOrder _order;
         private readonly IPayment _payment;
         private readonly IWarehouse _warehouse;
         private readonly ICharts _charts;
 
-        public CD(IOrder order, IPayment payment, IWarehouse warehouse, ICharts charts)
+        public MusicStore(IOrder order, IPayment payment, IWarehouse warehouse, ICharts charts)
         {
             _order = order;
             _payment = payment;
@@ -18,27 +30,27 @@
         public string Title { get; set; }
         public string Artist { get; set; }
 
-        public OrderResult Buy(int quantity)
+        public OrderResult Buy(BuyCDRequest request)
         {
-            if (!_warehouse.IsInStock())
+            if (!_warehouse.IsInStock(request))
             {
                 return new OrderResult { ErrorMessage = "CD out of stock" };
             }
 
-            _warehouse.BookCd(this, quantity);
+            _warehouse.BookCd(request);
 
             if (_payment.AcceptPayment())
             {
                 _order.PlaceOrder();
-                _charts.Notify(Title, Artist, quantity);
+                _charts.Notify(request.Title, request.Artist, request.Quantity);
+
+                return OrderResult.OK;
             }
             else
             {
-                _warehouse.RestockCd(this, quantity);
+                _warehouse.RestockCd(request);
                 return new OrderResult { ErrorMessage = "Payment cannot be processed" };
             }
-
-            return OrderResult.OK;
         }
     }
 }

@@ -2,8 +2,8 @@
 {
     public interface IWarehouse
     {
-        bool IsInStock();
-        void BookCd(CD cd, int quantity);
-        void RestockCd(CD cd, in int quantity);
+        bool IsInStock(BuyCDRequest request);
+        void BookCd(BuyCDRequest request);
+        void RestockCd(BuyCDRequest request);
     }
 }

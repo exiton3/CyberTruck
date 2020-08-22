@@ -13,7 +13,7 @@ namespace ShoppingBasket.Tests.Exercise3
     [TestFixture]
     public class BuyCDTests
     {
-        private CD _cd;
+        private MusicStore _musicStore;
         private Mock<IPayment> _payment;
         private Mock<IOrder> _order;
         private Mock<IWarehouse> _warehouse;
@@ -27,16 +27,18 @@ namespace ShoppingBasket.Tests.Exercise3
             _payment = new Mock<IPayment>();
             _warehouse = new Mock<IWarehouse>();
             _charts = new Mock<ICharts>();
-
-            _cd = new CD(_order.Object, _payment.Object, _warehouse.Object, _charts.Object);
+            _warehouse.Setup(x => x.IsInStock(It.IsAny<BuyCDRequest>())).Returns(true);
+            _musicStore = new MusicStore(_order.Object, _payment.Object, _warehouse.Object, _charts.Object);
         }
 
         [Test]
         public void CDOutOfStock_NoPaymentsProcessed()
         {
-            _warehouse.Setup(x => x.IsInStock()).Returns(false);
+            var cdRequest = new BuyCDRequest(1);
 
-            var result = _cd.Buy(1);
+            _warehouse.Setup(x => x.IsInStock(cdRequest)).Returns(false);
+
+            var result = _musicStore.Buy(cdRequest);
 
             _payment.Verify(x => x.AcceptPayment(), Times.Never);
         }
@@ -45,9 +47,10 @@ namespace ShoppingBasket.Tests.Exercise3
         [Test]
         public void CDOutOfStock_ReturnErrorResult()
         {
-            _warehouse.Setup(x => x.IsInStock()).Returns(false);
+            var cdRequest = new BuyCDRequest(1);
+            _warehouse.Setup(x => x.IsInStock(cdRequest)).Returns(false);
 
-            OrderResult result = _cd.Buy(1);
+            OrderResult result = _musicStore.Buy(cdRequest);
 
             Assert.That(result.IsSuccess, Is.False);
             Assert.That(result.ErrorMessage, Is.EqualTo("CD out of stock"));
@@ -57,21 +60,21 @@ namespace ShoppingBasket.Tests.Exercise3
         [Test]
         public void CdInStock_BookCDInWarehouse()
         {
-            _warehouse.Setup(x => x.IsInStock()).Returns(true);
-            var quantity = 1;
+            var cdRequest = new BuyCDRequest(1);
+            _warehouse.Setup(x => x.IsInStock(cdRequest)).Returns(true);
 
-            _cd.Buy(quantity);
+            _musicStore.Buy(cdRequest);
 
-           _warehouse.Verify(x=>x.BookCd(_cd,quantity));
+           _warehouse.Verify(x=>x.BookCd(cdRequest));
         }
 
         [Test]
         public void CdInStock_ProcessPayment()
         {
-            _warehouse.Setup(x => x.IsInStock()).Returns(true);
-            var quantity = 1;
+            var cdRequest = new BuyCDRequest(1);
+            _warehouse.Setup(x => x.IsInStock(cdRequest)).Returns(true);
 
-            _cd.Buy(quantity);
+            _musicStore.Buy(cdRequest);
 
             _payment.Verify(x => x.AcceptPayment());
         }
@@ -79,11 +82,11 @@ namespace ShoppingBasket.Tests.Exercise3
         [Test]
         public void PaymentIsRejected_ReturnErrorResult()
         {
-            _warehouse.Setup(x => x.IsInStock()).Returns(true);
+             var cdRequest = new BuyCDRequest(1);
+            _warehouse.Setup(x => x.IsInStock(cdRequest)).Returns(true);
             _payment.Setup(x => x.AcceptPayment()).Returns(false);
-            var quantity = 1;
 
-            var result = _cd.Buy(quantity);
+            var result = _musicStore.Buy(cdRequest);
 
             Assert.That(result.IsSuccess, Is.False);
             Assert.That(result.ErrorMessage, Is.EqualTo("Payment cannot be processed"));
@@ -92,22 +95,23 @@ namespace ShoppingBasket.Tests.Exercise3
         [Test]
         public void PaymentIsRejected_RestockCDInWarehouse()
         {
-            _warehouse.Setup(x => x.IsInStock()).Returns(true);
             _payment.Setup(x => x.AcceptPayment()).Returns(false);
             var quantity = 1;
 
-            var result = _cd.Buy(quantity);
+            var cdRequest = new BuyCDRequest(quantity);
+            var result = _musicStore.Buy(cdRequest);
 
-            _warehouse.Verify(x => x.RestockCd(_cd, quantity));
+            _warehouse.Verify(x => x.RestockCd(cdRequest));
         }
 
         [Test]
         public void PaymentRejected_OrderNotPlaced()
         {
+            var cdRequest = new BuyCDRequest(1);
             _payment.Setup(x => x.AcceptPayment()).Returns(false);
-            _warehouse.Setup(x => x.IsInStock()).Returns(false);
+            _warehouse.Setup(x => x.IsInStock(cdRequest)).Returns(false);
 
-            _cd.Buy(1);
+            _musicStore.Buy(cdRequest);
 
             _order.Verify(x => x.PlaceOrder(), Times.Never);
         }
@@ -115,10 +119,11 @@ namespace ShoppingBasket.Tests.Exercise3
         [Test]
         public void PaymentAccepted_OrderPlaced()
         {
-            _warehouse.Setup(x => x.IsInStock()).Returns(true);
+            var cdRequest = new BuyCDRequest(1);
+            _warehouse.Setup(x => x.IsInStock(cdRequest)).Returns(true);
             _payment.Setup(x => x.AcceptPayment()).Returns(true);
 
-            _cd.Buy(1);
+            _musicStore.Buy(cdRequest);
 
             _order.Verify(x => x.PlaceOrder(), Times.Once);
         }
@@ -126,10 +131,10 @@ namespace ShoppingBasket.Tests.Exercise3
         [Test]
         public void PaymentAccepted_ReturnSuccessResult()
         {
-            _warehouse.Setup(x => x.IsInStock()).Returns(true);
+          
             _payment.Setup(x => x.AcceptPayment()).Returns(true);
 
-            var result = _cd.Buy(1);
+            var result = _musicStore.Buy(new BuyCDRequest(1));
 
             Assert.That(result.IsSuccess, Is.True);
         }
@@ -137,12 +142,12 @@ namespace ShoppingBasket.Tests.Exercise3
         [Test]
         public void CDSoldOrderPlaced_NotifyChartsAboutSalesWithCDInfo()
         {
-            _warehouse.Setup(x => x.IsInStock()).Returns(true);
+            var cdRequest = new BuyCDRequest(10) { Title = "title", Artist = "artist" };
+            
+            _warehouse.Setup(x => x.IsInStock(cdRequest)).Returns(true);
             _payment.Setup(x => x.AcceptPayment()).Returns(true);
-            _cd.Title = "title";
-            _cd.Artist = "artist";
 
-            _cd.Buy(10);
+            _musicStore.Buy(cdRequest);
 
             _charts.Verify(x => x.Notify("title", "artist", 10));
         }
@@ -150,12 +155,12 @@ namespace ShoppingBasket.Tests.Exercise3
         [Test]
         public void CDNotSoldOrderPlaced_DoesNotNotifyChartsAboutSalesWithCDInfo()
         {
-            _warehouse.Setup(x => x.IsInStock()).Returns(true);
-            _payment.Setup(x => x.AcceptPayment()).Returns(false);
-            _cd.Title = "title";
-            _cd.Artist = "artist";
+            var cdRequest = new BuyCDRequest(10);
 
-            _cd.Buy(10);
+            _warehouse.Setup(x => x.IsInStock(cdRequest)).Returns(true);
+            _payment.Setup(x => x.AcceptPayment()).Returns(false);
+
+            _musicStore.Buy(cdRequest);
 
             _charts.Verify(x => x.Notify(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()), Times.Never);
         }
